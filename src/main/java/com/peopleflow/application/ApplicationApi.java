@@ -1,6 +1,8 @@
 package com.peopleflow.application;
 
+import com.peopleflow.entities.Application;
 import com.peopleflow.exceptions.ApplicationNotExist;
+import com.peopleflow.repos.ApplicationRepo;
 import com.peopleflow.workflow.HiringEvents;
 import com.peopleflow.workflow.HiringStates;
 import lombok.extern.java.Log;
@@ -8,23 +10,23 @@ import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.service.StateMachineService;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @Log
 @RestController
-@RequestMapping("/employee")
+@RequestMapping("/application")
 public class ApplicationApi {
 
     private final StateMachineService<HiringStates, HiringEvents> stateMachineService;
+    private final ApplicationRepo applicationRepo;
 
-    public ApplicationApi(StateMachineService<HiringStates, HiringEvents> stateMachineService) {
+    public ApplicationApi(StateMachineService<HiringStates, HiringEvents> stateMachineService, ApplicationRepo applicationRepo) {
         this.stateMachineService = stateMachineService;
+        this.applicationRepo = applicationRepo;
     }
 
     @PostMapping("/")
     @ResponseBody
     public String createApplication(@RequestBody CreateApplicationRequest createApplicationRequest) {
-        String id = UUID.randomUUID().toString().replace("-", "");
+        String id = IdGenerator.GenerateId();
         StateMachine<HiringStates, HiringEvents> stateMachine = stateMachineService.acquireStateMachine(id, false);
         stateMachine.getExtendedState().getVariables().put("application", createApplicationRequest);
         stateMachine.start();
@@ -33,13 +35,8 @@ public class ApplicationApi {
 
     @GetMapping("/{applicationId}")
     @ResponseBody
-    public HiringStates getApplicationStatus(@PathVariable String applicationId) {
-        StateMachine<HiringStates, HiringEvents> stateMachine = getStateMachine(applicationId);
-        if (stateMachine.getState() == null) {
-            throw new ApplicationNotExist();
-        }
-        String fullName = (String) stateMachine.getExtendedState().getVariables().getOrDefault("fullName", "Not found");
-        return stateMachine.getState().getId();
+    public Application getApplicationStatus(@PathVariable String applicationId) {
+        return applicationRepo.findById(applicationId).orElseThrow(ApplicationNotExist::new);
     }
 
     @PatchMapping("/screening/{applicationId}")
@@ -60,9 +57,8 @@ public class ApplicationApi {
     }
 
     @PatchMapping("/activate/{applicationId}")
-    public void activateApplicationStatus(@PathVariable String applicationId, @RequestBody ActivateApplicationRequest activateApplicationRequest) {
+    public void activateApplicationStatus(@PathVariable String applicationId) {
         StateMachine<HiringStates, HiringEvents> stateMachine = getStateMachine(applicationId);
-        stateMachine.getExtendedState().getVariables().put("application", activateApplicationRequest);
         stateMachine.sendEvent(HiringEvents.ON_ACTIVATED);
     }
 

@@ -27,6 +27,7 @@ public class Application {
     private LocalDate rejectionDate;
     private LocalDate terminationDate;
     private LocalDate cancelDate;
+    private LocalDate activationDate;
 
     private String approvalReason;
     private String rejectionReason;
