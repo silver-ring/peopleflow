@@ -2,9 +2,9 @@ package com.peopleflow.workflow;
 
 public enum HiringStates {
     ADDED,
-    IN_CHECK,
+    SCREENING,
     APPROVED,
-    ACTIVE,
+    ACTIVATED,
     TERMINATED,
     CANCELED,
     REJECTED,

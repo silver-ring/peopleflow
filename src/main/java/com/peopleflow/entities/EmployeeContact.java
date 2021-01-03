@@ -8,7 +8,7 @@ import javax.persistence.Id;
 
 @Entity
 @Data
-public class Candidate {
+public class EmployeeContact {
 
     @Id
     @GeneratedValue
@@ -16,7 +16,5 @@ public class Candidate {
 
     private String fullName;
     private String email;
-    private String coverLetter;
-    private String resume;
 
 }

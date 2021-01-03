@@ -13,6 +13,8 @@ import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Component
 @Log
 public class OnAdded implements Action<HiringStates, HiringEvents> {
@@ -29,19 +31,19 @@ public class OnAdded implements Action<HiringStates, HiringEvents> {
         ExtendedState extendedState = context.getExtendedState();
         CreateApplicationRequest createApplicationRequest = extendedState.get("application", CreateApplicationRequest.class);
 
-        String applicationId = context.getStateMachine().getId();
         Candidate candidate = new Candidate();
+        candidate.setFullName(createApplicationRequest.getFullName());
         candidate.setEmail(createApplicationRequest.getEmail());
         candidate.setCoverLetter(createApplicationRequest.getCoverLetter());
         candidate.setResume(createApplicationRequest.getResume());
-        candidate.setLinks(createApplicationRequest.getLinks());
 
+        String applicationId = context.getStateMachine().getId();
         Application application = new Application();
         application.setId(applicationId);
-//        application.setCandidate(candidate);
-//        application.setDate(LocalDate.now());
-//        application.setPosition(createApplicationRequest.getPosition());
-//        application.setStatus(HiringStates.ADDED);
+        application.setCandidate(candidate);
+        application.setStartDate(LocalDate.now());
+        application.setJobTitle(createApplicationRequest.getJobTitle());
+        application.setHiringStates(HiringStates.ADDED);
 
         applicationRepo.save(application);
     }

@@ -1,9 +1,9 @@
 package com.peopleflow.workflow;
 
 public enum HiringEvents {
-    ON_IN_CHECK,
+    ON_SCREENING,
     ON_APPROVED,
-    ON_ACTIVE,
+    ON_ACTIVATED,
     ON_TERMINATED,
     ON_CANCELED,
     ON_REJECTED

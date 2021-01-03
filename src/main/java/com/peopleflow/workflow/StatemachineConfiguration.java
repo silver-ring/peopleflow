@@ -25,50 +25,64 @@ public class StatemachineConfiguration extends StateMachineConfigurerAdapter<Hir
     private final StateChangeListener stateChangeListener;
     private final JpaStateMachineRepository jpaStateMachineRepository;
     private final OnAdded onAdded;
+    private final OnScreening onScreening;
+    private final OnActivated onActivated;
+    private final OnApproved onApproved;
+    private final OnCanceled onCanceled;
+    private final OnRejected onRejected;
+    private final OnTerminated onTerminated;
+
 
     @Autowired
     public StatemachineConfiguration(StateChangeListener stateChangeListener,
-                                     JpaStateMachineRepository jpaStateMachineRepository, OnAdded onAdded) {
+                                     JpaStateMachineRepository jpaStateMachineRepository, OnAdded onAdded,
+                                     OnScreening onScreening, OnActivated onActivated, OnApproved onApproved, OnCanceled onCanceled, OnRejected onRejected, OnTerminated onTerminated) {
         this.stateChangeListener = stateChangeListener;
         this.jpaStateMachineRepository = jpaStateMachineRepository;
         this.onAdded = onAdded;
+        this.onScreening = onScreening;
+        this.onActivated = onActivated;
+        this.onApproved = onApproved;
+        this.onCanceled = onCanceled;
+        this.onRejected = onRejected;
+        this.onTerminated = onTerminated;
     }
 
     @Override
     public void configure(StateMachineTransitionConfigurer<HiringStates, HiringEvents> transitions) throws Exception {
         transitions
-                .withExternal().source(HiringStates.ADDED).target(HiringStates.IN_CHECK)
-                .event(HiringEvents.ON_IN_CHECK).action(new OnInCheck())
+                .withExternal().source(HiringStates.ADDED).target(HiringStates.SCREENING)
+                .event(HiringEvents.ON_SCREENING).action(this.onScreening)
                 .and()
-                .withExternal().source(HiringStates.IN_CHECK).target(HiringStates.APPROVED)
-                .event(HiringEvents.ON_APPROVED).action(new OnApproved())
+                .withExternal().source(HiringStates.SCREENING).target(HiringStates.APPROVED)
+                .event(HiringEvents.ON_APPROVED).action(this.onApproved)
                 .and()
-                .withExternal().source(HiringStates.APPROVED).target(HiringStates.ACTIVE)
-                .event(HiringEvents.ON_ACTIVE).action(new OnActive())
+                .withExternal().source(HiringStates.APPROVED).target(HiringStates.ACTIVATED)
+                .event(HiringEvents.ON_ACTIVATED).action(this.onActivated)
                 .and()
-                .withExternal().source(HiringStates.IN_CHECK).target(HiringStates.REJECTED)
-                .event(HiringEvents.ON_REJECTED).action(new OnRejected())
+                .withExternal().source(HiringStates.SCREENING).target(HiringStates.REJECTED)
+                .event(HiringEvents.ON_REJECTED).action(this.onRejected)
                 .and()
                 .withExternal().source(HiringStates.ADDED).target(HiringStates.CANCELED)
-                .event(HiringEvents.ON_CANCELED).action(new OnCanceled())
+                .event(HiringEvents.ON_CANCELED).action(this.onCanceled)
                 .and()
-                .withExternal().source(HiringStates.IN_CHECK).target(HiringStates.CANCELED)
-                .event(HiringEvents.ON_CANCELED).action(new OnCanceled())
+                .withExternal().source(HiringStates.SCREENING).target(HiringStates.CANCELED)
+                .event(HiringEvents.ON_CANCELED).action(this.onCanceled)
                 .and()
                 .withExternal().source(HiringStates.APPROVED).target(HiringStates.CANCELED)
-                .event(HiringEvents.ON_CANCELED).action(new OnCanceled())
+                .event(HiringEvents.ON_CANCELED).action(this.onCanceled)
                 .and()
-                .withExternal().source(HiringStates.ACTIVE).target(HiringStates.TERMINATED)
-                .event(HiringEvents.ON_TERMINATED).action(new OnTerminated());
+                .withExternal().source(HiringStates.ACTIVATED).target(HiringStates.TERMINATED)
+                .event(HiringEvents.ON_TERMINATED).action(this.onTerminated);
     }
 
     @Override
     public void configure(StateMachineStateConfigurer<HiringStates, HiringEvents> states) throws Exception {
         states.withStates()
                 .initial(HiringStates.ADDED, onAdded)
-                .state(HiringStates.IN_CHECK)
+                .state(HiringStates.SCREENING)
                 .state(HiringStates.APPROVED)
-                .state(HiringStates.ACTIVE)
+                .state(HiringStates.ACTIVATED)
                 .end(HiringStates.TERMINATED)
                 .end(HiringStates.REJECTED)
                 .end(HiringStates.CANCELED);
